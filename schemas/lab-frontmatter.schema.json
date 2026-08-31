@@ -11,20 +11,32 @@
     "status",
     "created_at",
     "updated_at",
+    "ended_at",
+    "end_reason",
     "investigation",
     "related_nodes"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": { "const": 2 },
     "id": {
       "type": "string",
       "pattern": "^lab\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
     },
     "type": { "const": "lab" },
-    "status": { "enum": ["planned", "running", "completed", "invalid"] },
+    "status": {
+      "enum": ["planned", "running", "completed", "invalid", "abandoned"]
+    },
     "created_at": { "$ref": "#/$defs/date" },
     "updated_at": { "$ref": "#/$defs/date" },
+    "ended_at": { "$ref": "#/$defs/nullable_date" },
+    "end_reason": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
+    },
     "investigation": {
+      "description": "The Lab's single owning Investigation, or null for a standalone Knowledge Note learning/revision Lab.",
       "oneOf": [
         {
           "type": "string",
@@ -34,16 +46,61 @@
       ]
     },
     "related_nodes": {
+      "description": "Nodes whose Claims or learning this Lab bears on. Each entry with an existing Note must be reciprocated by that Note's labs array.",
       "type": "array",
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/node_id" }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "enum": ["planned", "running"] } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "ended_at": { "type": "null" },
+          "end_reason": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "completed" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "ended_at": { "$ref": "#/$defs/date" },
+          "end_reason": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "enum": ["invalid", "abandoned"] } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "ended_at": { "$ref": "#/$defs/date" },
+          "end_reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  ],
   "$defs": {
     "node_id": {
       "type": "string",
       "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
     },
-    "date": { "type": "string", "format": "date" }
+    "date": { "type": "string", "format": "date" },
+    "nullable_date": {
+      "oneOf": [
+        { "$ref": "#/$defs/date" },
+        { "type": "null" }
+      ]
+    }
   }
 }

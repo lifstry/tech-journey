@@ -20,7 +20,11 @@
     "schema_version": { "const": 1 },
     "id": { "$ref": "#/$defs/domain_id" },
     "name": { "type": "string", "minLength": 1 },
-    "description": { "type": "string", "minLength": 1 },
+    "description": {
+      "description": "The Domain's stable purpose; concrete learning goals belong to Roadmaps.",
+      "type": "string",
+      "minLength": 1
+    },
     "scope": {
       "type": "object",
       "additionalProperties": false,

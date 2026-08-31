@@ -23,7 +23,10 @@
       "pattern": "^inbox\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
     },
     "type": { "const": "inbox" },
-    "status": { "enum": ["captured", "promoted", "closed"] },
+    "status": {
+      "description": "promoted and closed are terminal; later work uses a new Inbox Item.",
+      "enum": ["captured", "promoted", "closed"]
+    },
     "created_at": { "$ref": "#/$defs/date" },
     "updated_at": { "$ref": "#/$defs/date" },
     "closed_at": { "$ref": "#/$defs/nullable_date" },

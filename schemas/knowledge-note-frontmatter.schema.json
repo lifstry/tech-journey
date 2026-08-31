@@ -10,6 +10,7 @@
     "domain",
     "title",
     "maturity",
+    "knowledge_cycle",
     "ai_reviewed",
     "author_confirmed",
     "created_at",
@@ -18,15 +19,25 @@
     "published_at",
     "investigations",
     "labs",
-    "superseded_by"
+    "superseded_by",
+    "superseded_at",
+    "archived_from",
+    "archived_at",
+    "archive_reason"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": { "const": 2 },
     "id": { "$ref": "#/$defs/node_id" },
     "domain": { "$ref": "#/$defs/domain_id" },
     "title": { "type": "string", "minLength": 1 },
     "maturity": {
       "enum": ["draft", "reviewed", "published", "superseded", "archived"]
+    },
+    "knowledge_cycle": {
+      "oneOf": [
+        { "enum": ["initial_learning", "revision"] },
+        { "type": "null" }
+      ]
     },
     "ai_reviewed": { "type": "boolean" },
     "author_confirmed": { "type": "boolean" },
@@ -35,6 +46,7 @@
     "reviewed_at": { "$ref": "#/$defs/nullable_date" },
     "published_at": { "$ref": "#/$defs/nullable_date" },
     "investigations": {
+      "description": "Investigations for which this Note is the knowledge_note origin or promotion target. Context-only related_nodes do not create a backlink.",
       "type": "array",
       "uniqueItems": true,
       "items": {
@@ -43,6 +55,7 @@
       }
     },
     "labs": {
+      "description": "Labs directly related to this Note. Every listed Lab must contain this Note ID in lab.related_nodes, and every Lab related_nodes entry with an existing Note must be reciprocated here.",
       "type": "array",
       "uniqueItems": true,
       "items": {
@@ -55,6 +68,20 @@
         { "$ref": "#/$defs/node_id" },
         { "type": "null" }
       ]
+    },
+    "superseded_at": { "$ref": "#/$defs/nullable_date" },
+    "archived_from": {
+      "oneOf": [
+        { "enum": ["draft", "reviewed", "published"] },
+        { "type": "null" }
+      ]
+    },
+    "archived_at": { "$ref": "#/$defs/nullable_date" },
+    "archive_reason": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
     }
   },
   "allOf": [
@@ -65,11 +92,18 @@
       },
       "then": {
         "properties": {
+          "knowledge_cycle": {
+            "enum": ["initial_learning", "revision"]
+          },
           "ai_reviewed": { "const": false },
           "author_confirmed": { "const": false },
           "reviewed_at": { "type": "null" },
           "published_at": { "type": "null" },
-          "superseded_by": { "type": "null" }
+          "superseded_by": { "type": "null" },
+          "superseded_at": { "type": "null" },
+          "archived_from": { "type": "null" },
+          "archived_at": { "type": "null" },
+          "archive_reason": { "type": "null" }
         }
       }
     },
@@ -80,11 +114,18 @@
       },
       "then": {
         "properties": {
+          "knowledge_cycle": {
+            "enum": ["initial_learning", "revision"]
+          },
           "ai_reviewed": { "const": true },
           "author_confirmed": { "const": false },
           "reviewed_at": { "$ref": "#/$defs/date" },
           "published_at": { "type": "null" },
-          "superseded_by": { "type": "null" }
+          "superseded_by": { "type": "null" },
+          "superseded_at": { "type": "null" },
+          "archived_from": { "type": "null" },
+          "archived_at": { "type": "null" },
+          "archive_reason": { "type": "null" }
         }
       }
     },
@@ -95,11 +136,16 @@
       },
       "then": {
         "properties": {
+          "knowledge_cycle": { "type": "null" },
           "ai_reviewed": { "const": true },
           "author_confirmed": { "const": true },
           "reviewed_at": { "$ref": "#/$defs/date" },
           "published_at": { "$ref": "#/$defs/date" },
-          "superseded_by": { "type": "null" }
+          "superseded_by": { "type": "null" },
+          "superseded_at": { "type": "null" },
+          "archived_from": { "type": "null" },
+          "archived_at": { "type": "null" },
+          "archive_reason": { "type": "null" }
         }
       }
     },
@@ -110,8 +156,85 @@
       },
       "then": {
         "properties": {
-          "superseded_by": { "$ref": "#/$defs/node_id" }
+          "knowledge_cycle": { "type": "null" },
+          "ai_reviewed": { "const": true },
+          "author_confirmed": { "const": true },
+          "reviewed_at": { "$ref": "#/$defs/date" },
+          "published_at": { "$ref": "#/$defs/date" },
+          "superseded_by": { "$ref": "#/$defs/node_id" },
+          "superseded_at": { "$ref": "#/$defs/date" },
+          "archived_from": { "type": "null" },
+          "archived_at": { "type": "null" },
+          "archive_reason": { "type": "null" }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": { "maturity": { "const": "archived" } },
+        "required": ["maturity"]
+      },
+      "then": {
+        "properties": {
+          "superseded_by": { "type": "null" },
+          "superseded_at": { "type": "null" },
+          "archived_from": {
+            "enum": ["draft", "reviewed", "published"]
+          },
+          "archived_at": { "$ref": "#/$defs/date" },
+          "archive_reason": { "type": "string", "minLength": 1 }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "archived_from": { "const": "draft" } },
+              "required": ["archived_from"]
+            },
+            "then": {
+              "properties": {
+                "knowledge_cycle": {
+                  "enum": ["initial_learning", "revision"]
+                },
+                "ai_reviewed": { "const": false },
+                "author_confirmed": { "const": false },
+                "reviewed_at": { "type": "null" },
+                "published_at": { "type": "null" }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": { "archived_from": { "const": "reviewed" } },
+              "required": ["archived_from"]
+            },
+            "then": {
+              "properties": {
+                "knowledge_cycle": {
+                  "enum": ["initial_learning", "revision"]
+                },
+                "ai_reviewed": { "const": true },
+                "author_confirmed": { "const": false },
+                "reviewed_at": { "$ref": "#/$defs/date" },
+                "published_at": { "type": "null" }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": { "archived_from": { "const": "published" } },
+              "required": ["archived_from"]
+            },
+            "then": {
+              "properties": {
+                "knowledge_cycle": { "type": "null" },
+                "ai_reviewed": { "const": true },
+                "author_confirmed": { "const": true },
+                "reviewed_at": { "$ref": "#/$defs/date" },
+                "published_at": { "$ref": "#/$defs/date" }
+              }
+            }
+          }
+        ]
       }
     }
   ],

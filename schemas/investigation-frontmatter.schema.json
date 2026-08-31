@@ -27,7 +27,10 @@
       "pattern": "^investigation\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
     },
     "type": { "const": "investigation" },
-    "status": { "enum": ["active", "closed", "abandoned"] },
+    "status": {
+      "description": "closed and abandoned are terminal, and cross-file validation requires all linked Labs to be terminal first.",
+      "enum": ["active", "closed", "abandoned"]
+    },
     "created_at": { "$ref": "#/$defs/date" },
     "updated_at": { "$ref": "#/$defs/date" },
     "ended_at": { "$ref": "#/$defs/nullable_date" },
@@ -63,16 +66,19 @@
       ]
     },
     "domains": {
+      "description": "Complete inventory of materially involved Domains, including at least those implied by a Knowledge Note origin, related_nodes, promotion_target, and linked Labs' related_nodes.",
       "type": "array",
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/domain_id" }
     },
     "related_nodes": {
+      "description": "Contextual Knowledge Nodes other than promotion_target. These references do not require Knowledge Note backlinks.",
       "type": "array",
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/node_id" }
     },
     "labs": {
+      "description": "Labs owned by this Investigation. Every listed Lab must point back through its singular investigation field.",
       "type": "array",
       "uniqueItems": true,
       "items": {
@@ -89,6 +95,7 @@
       ]
     },
     "promotion_target": {
+      "description": "The one Knowledge Node actually changed by promotion. It may equal a knowledge_note origin reference, but must not be duplicated in related_nodes.",
       "oneOf": [
         { "$ref": "#/$defs/node_id" },
         { "type": "null" }
