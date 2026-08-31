@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tech-journey.local/schemas/knowledge-note-frontmatter.schema.json",
+  "title": "Knowledge Note Frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "domain",
+    "title",
+    "maturity",
+    "ai_reviewed",
+    "author_confirmed",
+    "created_at",
+    "updated_at",
+    "reviewed_at",
+    "published_at",
+    "investigations",
+    "labs",
+    "superseded_by"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "#/$defs/node_id" },
+    "domain": { "$ref": "#/$defs/domain_id" },
+    "title": { "type": "string", "minLength": 1 },
+    "maturity": {
+      "enum": ["draft", "reviewed", "published", "superseded", "archived"]
+    },
+    "ai_reviewed": { "type": "boolean" },
+    "author_confirmed": { "type": "boolean" },
+    "created_at": { "$ref": "#/$defs/date" },
+    "updated_at": { "$ref": "#/$defs/date" },
+    "reviewed_at": { "$ref": "#/$defs/nullable_date" },
+    "published_at": { "$ref": "#/$defs/nullable_date" },
+    "investigations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^investigations/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
+      }
+    },
+    "labs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^labs/[a-z0-9]+(?:-[a-z0-9]+)*/README\\.md$"
+      }
+    },
+    "superseded_by": {
+      "oneOf": [
+        { "$ref": "#/$defs/node_id" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "maturity": { "const": "draft" } },
+        "required": ["maturity"]
+      },
+      "then": {
+        "properties": {
+          "ai_reviewed": { "const": false },
+          "author_confirmed": { "const": false },
+          "reviewed_at": { "type": "null" },
+          "published_at": { "type": "null" },
+          "superseded_by": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "maturity": { "const": "reviewed" } },
+        "required": ["maturity"]
+      },
+      "then": {
+        "properties": {
+          "ai_reviewed": { "const": true },
+          "author_confirmed": { "const": false },
+          "reviewed_at": { "$ref": "#/$defs/date" },
+          "published_at": { "type": "null" },
+          "superseded_by": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "maturity": { "const": "published" } },
+        "required": ["maturity"]
+      },
+      "then": {
+        "properties": {
+          "ai_reviewed": { "const": true },
+          "author_confirmed": { "const": true },
+          "reviewed_at": { "$ref": "#/$defs/date" },
+          "published_at": { "$ref": "#/$defs/date" },
+          "superseded_by": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "maturity": { "const": "superseded" } },
+        "required": ["maturity"]
+      },
+      "then": {
+        "properties": {
+          "superseded_by": { "$ref": "#/$defs/node_id" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "domain_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "nullable_date": {
+      "oneOf": [
+        { "$ref": "#/$defs/date" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tech-journey.local/schemas/inbox-frontmatter.schema.json",
+  "title": "Inbox Item Frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "type",
+    "status",
+    "created_at",
+    "updated_at",
+    "closed_at",
+    "close_reason",
+    "domains",
+    "investigation"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^inbox\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "type": { "const": "inbox" },
+    "status": { "enum": ["captured", "promoted", "closed"] },
+    "created_at": { "$ref": "#/$defs/date" },
+    "updated_at": { "$ref": "#/$defs/date" },
+    "closed_at": { "$ref": "#/$defs/nullable_date" },
+    "close_reason": {
+      "oneOf": [
+        {
+          "enum": [
+            "resolved_without_investigation",
+            "duplicate",
+            "not_worth_investigating",
+            "out_of_scope"
+          ]
+        },
+        { "type": "null" }
+      ]
+    },
+    "domains": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/domain_id" }
+    },
+    "investigation": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^investigations/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
+        },
+        { "type": "null" }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "captured" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "closed_at": { "type": "null" },
+          "close_reason": { "type": "null" },
+          "investigation": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "promoted" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "closed_at": { "type": "null" },
+          "close_reason": { "type": "null" },
+          "investigation": {
+            "type": "string",
+            "pattern": "^investigations/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "closed" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "closed_at": { "$ref": "#/$defs/date" },
+          "close_reason": {
+            "enum": [
+              "resolved_without_investigation",
+              "duplicate",
+              "not_worth_investigating",
+              "out_of_scope"
+            ]
+          },
+          "investigation": { "type": "null" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "domain_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "date": { "type": "string", "format": "date" },
+    "nullable_date": {
+      "oneOf": [
+        { "$ref": "#/$defs/date" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tech-journey.local/schemas/graph.schema.json",
+  "title": "Knowledge Dependency Graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "domain", "edges"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "domain": {
+      "description": "The owning Domain. Every prerequisite target and both endpoints of every related edge must belong to this Domain.",
+      "$ref": "#/$defs/domain_id"
+    },
+    "edges": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "domain_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "type", "rationale"],
+      "properties": {
+        "from": { "$ref": "#/$defs/node_id" },
+        "to": { "$ref": "#/$defs/node_id" },
+        "type": {
+          "description": "Cross-Domain prerequisite edges are allowed only when the target belongs to the owning Domain. Cross-Domain related edges are not allowed in V1.",
+          "enum": ["prerequisite", "related"]
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

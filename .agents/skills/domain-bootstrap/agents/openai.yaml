@@ -1,0 +1,3 @@
+interface:
+  display_name: "Domain Bootstrap"
+  short_description: "Manage a domain's scope, lifecycle, map, graph, and roadmap"

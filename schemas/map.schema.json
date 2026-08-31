@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tech-journey.local/schemas/map.schema.json",
+  "title": "Knowledge Map",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "domain", "nodes"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "domain": { "$ref": "#/$defs/domain_id" },
+    "nodes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/node" }
+    }
+  },
+  "$defs": {
+    "domain_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "description", "parent"],
+      "properties": {
+        "id": { "$ref": "#/$defs/node_id" },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "parent": {
+          "oneOf": [
+            { "$ref": "#/$defs/node_id" },
+            { "type": "null" }
+          ]
+        }
+      }
+    }
+  }
+}

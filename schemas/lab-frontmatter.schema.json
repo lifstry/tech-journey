@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tech-journey.local/schemas/lab-frontmatter.schema.json",
+  "title": "Lab Frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "type",
+    "status",
+    "created_at",
+    "updated_at",
+    "investigation",
+    "related_nodes"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^lab\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "type": { "const": "lab" },
+    "status": { "enum": ["planned", "running", "completed", "invalid"] },
+    "created_at": { "$ref": "#/$defs/date" },
+    "updated_at": { "$ref": "#/$defs/date" },
+    "investigation": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^investigations/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
+        },
+        { "type": "null" }
+      ]
+    },
+    "related_nodes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/node_id" }
+    }
+  },
+  "$defs": {
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "date": { "type": "string", "format": "date" }
+  }
+}

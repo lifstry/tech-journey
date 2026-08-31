@@ -1,0 +1,17 @@
+schema_version: 1
+
+id: example-domain
+name: Example Domain
+description: Replace this with the stable purpose of the Domain.
+
+scope:
+  include:
+    - Replace this with an included topic.
+  exclude: []
+
+status: active
+archived_at: null
+archive_reason: null
+
+created_at: "2026-08-27"
+updated_at: "2026-08-27"

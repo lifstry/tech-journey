@@ -1,0 +1,22 @@
+schema_version: 1
+
+id: example-domain.example-roadmap
+domain: example-domain
+title: Example Roadmap
+goal: Replace this with one concrete learning outcome.
+starting_point: Replace this with the author's relevant current understanding and experience.
+
+status: active
+ended_at: null
+archive_reason: null
+
+phases:
+  - id: foundations
+    title: Foundations
+    items:
+      - node: example-domain.example-node
+        status: planned
+        completed_at: null
+
+created_at: "2026-08-27"
+updated_at: "2026-08-27"

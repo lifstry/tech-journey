@@ -1,0 +1,8 @@
+schema_version: 1
+domain: example-domain
+
+nodes:
+  - id: example-domain.example-node
+    title: Example Node
+    description: Replace this with the stable meaning of the Knowledge Node.
+    parent: null
